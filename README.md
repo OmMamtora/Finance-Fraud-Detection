@@ -220,14 +220,6 @@ The stacking architecture combines multiple algorithms to improve prediction per
 
 The project is actively being enhanced with Deep Learning techniques for improved fraud detection performance.
 
-Research Areas:
-
-* Artificial Neural Networks (ANN)
-* Autoencoders for Anomaly Detection
-* Deep Learning Ensembles
-* Hybrid ML + DL Architectures
-* Advanced Imbalanced Learning Strategies
-
 ---
 
 # 📊 Model Evaluation
@@ -241,13 +233,14 @@ The system evaluates models using:
 * ROC-AUC
 * Confusion Matrix
 
-Generated Reports:
+Generated Visualizations:
 
-* ROC Curves
-* Precision-Recall Curves
-* Correlation Heatmaps
-* Target Distribution Analysis
-* Feature Importance Analysis
+* Target Distribution
+* Correlation Heatmap
+* Confusion Matrix
+* ROC Curve
+* Precision-Recall Curve
+* Threshold vs F1 Score
 * Prediction Probability Distribution
 
 ---
