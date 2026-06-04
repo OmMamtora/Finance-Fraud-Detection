@@ -138,7 +138,7 @@ The dataset used in this project is not included in the GitHub repository due to
 Google Drive:
 
 ```text
-https://drive.google.com/file/d/1OzhnR8K3X029BEFfaim8SlTK4PsUuQ6R/view?usp=drive_link
+https://drive.google.com/drive/folders/1BkwFHo_ng2IMF3AlMN7WAIdgCHGNg1mq?usp=drive_link
 ```
 
 ### Dataset Placement
