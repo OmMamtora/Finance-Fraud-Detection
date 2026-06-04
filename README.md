@@ -380,11 +380,6 @@ Apache Airflow manages:
 * XGBoost
 * LightGBM
 
-### Deep Learning
-
-* TensorFlow (In Progress)
-* PyTorch (Research Phase)
-
 ### Big Data
 
 * Apache Spark
@@ -440,7 +435,3 @@ Future development focuses on integrating Deep Learning models and advanced anom
 **Symbiosis Skills and Professional University**
 
 ---
-
-# 📜 License
-
-This project is developed for academic, educational, and research purposes.
