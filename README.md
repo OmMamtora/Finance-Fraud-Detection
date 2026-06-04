@@ -405,6 +405,7 @@ Apache Airflow manages:
 
 ### Visualization
 
+* PowerBI
 * Matplotlib
 * Seaborn
 
