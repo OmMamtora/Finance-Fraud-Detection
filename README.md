@@ -417,21 +417,3 @@ Smart FinGuard is actively under development. The current version includes a com
 Future development focuses on integrating Deep Learning models and advanced anomaly detection techniques to further improve fraud detection performance.
 
 ---
-
-# 👨‍💻 Team
-
-### Smart FinGuard Development Team
-
-* Om Mamtora
-* Riya Dhorajiya
-* Hemangi Vaghasiya
-* Varun Kumbhani
-* Mitali Rafaliya
-
-### Academic Program
-
-**Master of Science in Data Science**
-
-**Symbiosis Skills and Professional University**
-
----
