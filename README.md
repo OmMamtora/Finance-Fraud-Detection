@@ -95,27 +95,27 @@ Fraud Risk Intelligence
 ```bash
 Finance-Fraud-Detection/
 │
-├── airflow_dags/
-├── api_service/
-├── artifacts/
-├── config/
+├── airflow_dags/              # Airflow DAG workflows
+├── api_service/               # FastAPI backend services
+├── artifacts/                 # Trained models and outputs
+├── config/                    # Configuration files
 │
 ├── Data/
-│   ├── raw/
-│   ├── processed/
-│   └── external/
+│   ├── raw/                   # Raw datasets
+│   ├── processed/             # Processed datasets
+│   └── external/              # External datasets
 │
-├── data_ingestion/
-├── data_processing/
-├── eda/
-├── feature_engineering/
-├── model_training/
-├── model_evaluation/
+├── data_ingestion/            # Data ingestion modules
+├── data_processing/           # Spark ETL processing
+├── eda/                       # Exploratory Data Analysis
+├── feature_engineering/       # Feature generation pipeline
+├── model_training/            # Model training modules
+├── model_evaluation/          # Evaluation modules
 │
-├── docs/
-├── logs/
-├── tests/
-├── utils/
+├── docs/                      # Documentation
+├── logs/                      # Application logs
+├── tests/                     # Testing modules
+├── utils/                     # Utility functions
 │
 ├── web_app/
 │   ├── templates/
@@ -123,11 +123,10 @@ Finance-Fraud-Detection/
 │
 ├── requirements.txt
 ├── README.md
-└── FileManagement.txt
+└── SmartFinGuard_Presentation.pptx
 ```
 
 ---
-
 # 📊 Dataset Availability
 
 > ⚠️ Dataset Not Included in Repository
