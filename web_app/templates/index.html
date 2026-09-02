@@ -1,0 +1,1619 @@
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Smart FinGuard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+  /* ════════════════════ TOKENS ════════════════════ */
+  :root{
+    --ink:#e8f2fc;--muted:#6a8aaa;--panel:rgba(7,13,24,0.85);
+    --line:rgba(120,170,220,0.10);--accent:#3ec99e;--warn:#f5b84a;--danger:#f0614e;--safe:#3ec99e;
+    --shadow:0 24px 64px rgba(0,0,0,0.45);
+    --bg1:#050d1a;--bg2:#080f1e;--bg3:#0c1626;
+    --font-display:'Syne',sans-serif;
+    --font-body:'DM Sans',sans-serif;
+    --font-mono:'DM Mono',monospace;
+    --radius-card:20px;--radius-inner:12px;
+  }
+
+  /* ════════════════════ RESET ════════════════════ */
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;overflow:hidden;}
+  body{
+    font-family:var(--font-body);color:var(--ink);
+    background:
+      radial-gradient(ellipse 70% 50% at 5% 0%, rgba(62,201,158,0.10) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 35% at 95% 15%, rgba(60,100,220,0.09) 0%, transparent 50%),
+      radial-gradient(ellipse 40% 30% at 80% 90%, rgba(240,97,78,0.06) 0%, transparent 50%),
+      linear-gradient(155deg,var(--bg1) 0%,var(--bg2) 50%,var(--bg3) 100%);
+    display:flex;flex-direction:column;height:100vh;
+  }
+
+  /* ════════════════════ SCROLLBAR ════════════════════ */
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:rgba(62,201,158,0.2);border-radius:4px;}
+
+  /* ════════════════════ TOPBAR ════════════════════ */
+  .topbar{
+    flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:10px 24px;
+    background:rgba(5,9,18,0.92);border-bottom:1px solid var(--line);
+    backdrop-filter:blur(20px);z-index:100;
+  }
+  .brand{display:flex;align-items:center;gap:11px;}
+  .brand-mark{
+    width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+    background:linear-gradient(135deg,rgba(62,201,158,0.22),rgba(60,100,220,0.18));
+    border:1px solid rgba(62,201,158,0.28);font-family:var(--font-display);font-weight:800;font-size:11px;letter-spacing:.05em;color:#7ddfc2;
+  }
+  .brand-copy strong{display:block;font-family:var(--font-display);font-size:13.5px;font-weight:700;letter-spacing:-.01em;}
+  .brand-copy span{display:block;color:var(--muted);font-size:9.5px;text-transform:uppercase;letter-spacing:.14em;}
+  .topnav{display:flex;gap:4px;}
+  .topnav button{
+    background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);
+    color:#8aaac5;padding:7px 15px;border-radius:11px;font-size:12.5px;font-family:var(--font-body);font-weight:500;
+    cursor:pointer;transition:all .18s;letter-spacing:.02em;
+  }
+  .topnav button:hover{background:rgba(255,255,255,0.06);color:var(--ink);}
+  .topnav button.active{
+    background:linear-gradient(135deg,rgba(62,201,158,0.18),rgba(62,201,158,0.08));
+    color:#7ddfc2;border-color:rgba(62,201,158,0.3);font-weight:600;
+  }
+  .status-chip{
+    display:flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;
+    background:rgba(62,201,158,0.08);border:1px solid rgba(62,201,158,0.18);
+    color:#8adec2;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;
+  }
+  .pulse{width:6px;height:6px;border-radius:50%;background:#3ec99e;box-shadow:0 0 10px rgba(62,201,158,.65);
+    animation:blink 2s infinite;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* ════════════════════ SHELL + SIDEBAR ════════════════════ */
+  .shell{flex:1;display:flex;overflow:hidden;}
+  .sidebar{
+    width:240px;flex:0 0 240px;overflow-y:auto;padding:18px 14px;
+    background:rgba(5,9,18,0.65);border-right:1px solid var(--line);
+    display:flex;flex-direction:column;gap:18px;
+  }
+  .side-block{display:flex;flex-direction:column;gap:6px;}
+  .side-label{font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);padding:0 6px;margin-bottom:2px;}
+  .nav-item{
+    display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:13px;
+    border:1px solid transparent;background:transparent;cursor:pointer;transition:all .16s;
+  }
+  .nav-item:hover{background:rgba(255,255,255,0.035);border-color:rgba(255,255,255,0.055);}
+  .nav-item.active{background:linear-gradient(135deg,rgba(62,201,158,.12),rgba(60,100,220,.07));border-color:rgba(62,201,158,.25);}
+  .nav-num{
+    width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
+    background:rgba(255,255,255,.04);font-family:var(--font-mono);font-size:10px;font-weight:500;flex:0 0 30px;color:#9aafc0;
+  }
+  .nav-item.active .nav-num{background:rgba(62,201,158,0.12);color:#7ddfc2;}
+  .nav-text strong{display:block;font-size:12.5px;font-weight:600;margin-bottom:1px;}
+  .nav-text span{display:block;color:var(--muted);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;}
+
+  .pulse-cards{display:flex;flex-direction:column;gap:7px;}
+  .pulse-card{
+    padding:11px 13px;border-radius:13px;
+    background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.045);
+  }
+  .pulse-card .pc-label{font-family:var(--font-mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+  .pulse-card .pc-val{font-size:15px;font-weight:600;margin-top:5px;font-family:var(--font-display);}
+
+  /* ════════════════════ MAIN ════════════════════ */
+  .main{flex:1;overflow-y:auto;padding:18px 22px 28px;display:flex;flex-direction:column;gap:18px;}
+
+  /* ════════════════════ PAGES ════════════════════ */
+  .page{display:none;flex-direction:column;gap:18px;}
+  .page.active{display:flex;}
+
+  /* ════════════════════ CARDS ════════════════════ */
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-card);
+    backdrop-filter:blur(18px);box-shadow:var(--shadow);padding:22px;
+  }
+  .card h2{font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:-.03em;margin-bottom:6px;}
+  .card .sub{color:var(--muted);font-size:12.5px;line-height:1.65;margin-bottom:16px;}
+
+  /* ════════════════════ HERO ROW ════════════════════ */
+  .hero-row{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:stretch;}
+  .hero-left{padding:28px 30px;}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;
+    font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.14em;
+    color:#b0e8d0;background:rgba(62,201,158,.08);border:1px solid rgba(62,201,158,.18);margin-bottom:14px;
+  }
+  .hero-left h1{font-family:var(--font-display);font-size:clamp(26px,3.2vw,46px);line-height:.94;letter-spacing:-.04em;margin-bottom:11px;}
+  .hero-left p{color:var(--muted);line-height:1.7;font-size:13px;max-width:460px;}
+  .hero-badges{display:flex;gap:9px;margin-top:18px;flex-wrap:wrap;}
+  .hbadge{
+    padding:7px 13px;border-radius:11px;font-size:11.5px;font-weight:500;
+    background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);
+    display:flex;flex-direction:column;gap:2px;
+  }
+  .hbadge .hb-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;}
+  .hbadge .hb-val{font-size:14px;font-weight:700;}
+  .hero-right{display:flex;flex-direction:column;padding:20px;gap:13px;}
+
+  /* ════════════════════ KPI STRIP ════════════════════ */
+  .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .kpi{
+    padding:16px;border-radius:16px;
+    background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.065);
+  }
+  .kpi .k-label{font-family:var(--font-mono);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);}
+  .kpi .k-val{font-family:var(--font-display);font-size:21px;font-weight:700;margin-top:7px;}
+  .kpi .k-sub{font-size:10.5px;color:var(--muted);margin-top:3px;}
+
+  /* ════════════════════ LAYOUTS ════════════════════ */
+  .two-col{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:start;}
+  .two-col-eq{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
+  .stack{display:flex;flex-direction:column;gap:16px;}
+
+  /* ════════════════════ FORM ════════════════════ */
+  .quick-picks{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:18px;}
+  .qp{
+    padding:11px;border-radius:12px;border:1px solid rgba(255,255,255,.065);
+    background:rgba(255,255,255,.025);cursor:pointer;transition:all .18s;
+  }
+  .qp:hover{border-color:rgba(62,201,158,.3);background:rgba(62,201,158,.055);}
+  .qp strong{display:block;font-size:11.5px;font-weight:600;margin-bottom:3px;}
+  .qp p{margin:0;color:var(--muted);font-size:10.5px;line-height:1.5;}
+  .fgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:#8aaac0;}
+  input,select{
+    width:100%;padding:11px 13px;border-radius:11px;font-family:var(--font-body);font-size:13px;
+    border:1px solid rgba(150,190,230,.10);background:rgba(255,255,255,.035);color:var(--ink);
+    outline:none;transition:border-color .18s,background .18s;
+  }
+  select option{background:#08101e;}
+  input::placeholder{color:#4a6882;}
+  input:focus,select:focus{border-color:rgba(62,201,158,.55);background:rgba(255,255,255,.055);}
+  .submit-btn{
+    width:100%;padding:13px;border-radius:13px;border:none;font-family:var(--font-display);
+    font-size:14px;font-weight:700;color:#021810;cursor:pointer;
+    background:linear-gradient(135deg,#7ae8c8,#3ec99e 55%,#1e9e7a);
+    box-shadow:0 8px 28px rgba(62,201,158,.28);transition:opacity .18s,transform .18s;margin-top:4px;
+    letter-spacing:.01em;
+  }
+  .submit-btn:hover{opacity:.9;transform:translateY(-1px);}
+  .submit-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+  .tip{font-family:var(--font-mono);font-size:10.5px;color:var(--muted);line-height:1.6;margin-top:7px;}
+
+  /* ════════════════════ RESULT / RISK ════════════════════ */
+  .risk-badge{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:8px 15px;border-radius:999px;font-family:var(--font-mono);font-size:11px;
+    text-transform:uppercase;letter-spacing:.12em;font-weight:500;
+  }
+  .risk-badge.safe{background:rgba(62,201,158,.10);color:#8adec2;border:1px solid rgba(62,201,158,.24);}
+  .risk-badge.warning{background:rgba(245,184,74,.10);color:#f5d49a;border:1px solid rgba(245,184,74,.24);}
+  .risk-badge.critical{background:rgba(240,97,78,.10);color:#f5aba3;border:1px solid rgba(240,97,78,.24);}
+  .risk-badge.neutral{background:rgba(100,140,180,.08);color:#a8c4d8;border:1px solid rgba(100,140,180,.18);}
+
+  .score-ring{
+    width:132px;height:132px;border-radius:50%;display:grid;place-items:center;
+    border:1px solid rgba(255,255,255,.065);transition:background .55s;margin:10px 0;
+  }
+  .score-ring strong{display:block;font-family:var(--font-display);font-size:24px;text-align:center;}
+  .score-ring span{display:block;font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;text-align:center;}
+  .rgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .rc{padding:13px;border-radius:13px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.065);}
+  .rc .rc-l{display:block;font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;}
+  .rc strong{font-size:15px;font-weight:600;}
+  .callout{
+    padding:14px;border-radius:14px;background:rgba(62,201,158,.06);
+    border:1px solid rgba(62,201,158,.12);color:#b8ddd0;line-height:1.7;font-size:12.5px;
+  }
+
+  /* ════════════════════ SIGNALS ════════════════════ */
+  .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .sc{padding:14px;border-radius:13px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.065);}
+  .sc .sc-l{display:block;font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;}
+  .sc strong{display:block;font-size:12.5px;margin-bottom:7px;}
+  .spill{
+    display:inline-flex;padding:4px 9px;border-radius:999px;font-family:var(--font-mono);font-size:9px;font-weight:500;
+    text-transform:uppercase;letter-spacing:.08em;
+  }
+  .spill.safe{background:rgba(62,201,158,.10);color:#8adec2;}
+  .spill.warning{background:rgba(245,184,74,.10);color:#f5d49a;}
+  .spill.critical{background:rgba(240,97,78,.10);color:#f5aba3;}
+  .spill.neutral{background:rgba(100,140,180,.08);color:#a8c4d8;}
+
+  /* ════════════════════ ANALYST ACTIONS ════════════════════ */
+  .alist{display:flex;flex-direction:column;gap:9px;}
+  .aitem{display:flex;gap:11px;align-items:flex-start;padding:13px 15px;border-radius:13px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.065);}
+  .aidx{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:0 0 26px;background:rgba(62,201,158,.12);color:#8adec2;font-family:var(--font-mono);font-size:10px;}
+  .aitem p{margin:0;color:#c8e0f0;line-height:1.6;font-size:12.5px;}
+
+  /* ════════════════════ ALERTS ════════════════════ */
+  .alerts-list{display:flex;flex-direction:column;gap:9px;}
+  .alert-row{padding:13px 15px 13px 19px;border-radius:13px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.065);position:relative;overflow:hidden;}
+  .alert-row::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;}
+  .alert-row.critical::before{background:var(--danger);}
+  .alert-row.warning::before{background:var(--warn);}
+  .alert-row.safe::before{background:var(--safe);}
+  .alert-row .ar-title{font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;}
+  .alert-row p{margin:0;font-size:12.5px;color:#ccdde8;line-height:1.55;}
+  .alert-row .ar-time{font-family:var(--font-mono);font-size:9.5px;color:var(--muted);margin-top:4px;}
+
+  .filter-row{display:flex;gap:7px;margin-bottom:14px;}
+  .filter-btn{
+    padding:5px 13px;border-radius:9px;border:1px solid rgba(255,255,255,.07);
+    background:rgba(255,255,255,.025);color:#8aaac0;font-family:var(--font-mono);font-size:11px;cursor:pointer;
+    transition:all .14s;
+  }
+  .filter-btn.active{background:rgba(62,201,158,.12);border-color:rgba(62,201,158,.28);color:#8adec2;}
+  .alert-full{padding:15px 17px 15px 21px;border-radius:15px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.065);position:relative;overflow:hidden;display:flex;justify-content:space-between;align-items:flex-start;}
+  .alert-full::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;}
+  .alert-full.critical::before{background:var(--danger);}
+  .alert-full.warning::before{background:var(--warn);}
+  .alert-full.safe::before{background:var(--safe);}
+  .sev-tag{padding:4px 10px;border-radius:7px;font-family:var(--font-mono);font-size:9.5px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;}
+  .sev-tag.critical{background:rgba(240,97,78,.12);color:#f5aba3;}
+  .sev-tag.warning{background:rgba(245,184,74,.12);color:#f5d49a;}
+  .sev-tag.safe{background:rgba(62,201,158,.12);color:#8adec2;}
+
+  /* ════════════════════ AI BOX ════════════════════ */
+  .ai-box{padding:16px;border-radius:15px;background:rgba(62,201,158,.04);border:1px solid rgba(62,201,158,.10);font-size:12.5px;line-height:1.8;color:#b5d8ce;}
+  .ai-box h4{font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:#6abea0;margin-bottom:9px;}
+
+  /* ════════════════════ LOADER ════════════════════ */
+  .loader-wrap{position:relative;}
+  .loader-ovl{display:none;position:absolute;inset:0;border-radius:var(--radius-card);background:rgba(5,9,18,.9);backdrop-filter:blur(8px);align-items:center;justify-content:center;flex-direction:column;gap:11px;z-index:10;}
+  .loader-ovl.on{display:flex;}
+  .spin{width:34px;height:34px;border-radius:50%;border:3px solid rgba(62,201,158,.18);border-top-color:#3ec99e;animation:spin .75s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loader-ovl p{font-family:var(--font-mono);font-size:11px;color:var(--muted);}
+
+  /* ════════════════════ CHARTS ════════════════════ */
+  .chart-card{padding:20px;}
+  .chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .chart-title{font-family:var(--font-display);font-size:13.5px;font-weight:700;}
+  .chart-sub{font-family:var(--font-mono);font-size:10px;color:var(--muted);}
+  .chart-wrap{position:relative;height:195px;}
+  .legend-row{display:flex;gap:13px;margin-top:9px;flex-wrap:wrap;}
+  .leg{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--muted);}
+  .leg-dot{width:8px;height:8px;border-radius:2px;}
+
+
+  /* ════════════════════ DASHBOARD PAGE (Power BI) ════════════════════ */
+  .pbi-wrapper{
+    display:flex;flex-direction:column;gap:16px;
+  }
+  .pbi-header{
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  }
+  .pbi-title-block h2{font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:-.03em;margin-bottom:4px;}
+  .pbi-title-block p{font-size:12.5px;color:var(--muted);}
+  .pbi-actions{display:flex;gap:8px;}
+  .pbi-btn{
+    padding:8px 16px;border-radius:11px;border:1px solid rgba(255,255,255,.09);
+    background:rgba(255,255,255,.04);color:#9aafc0;font-family:var(--font-mono);font-size:11px;
+    cursor:pointer;transition:all .15s;
+  }
+  .pbi-btn:hover{background:rgba(62,201,158,.1);border-color:rgba(62,201,158,.25);color:#8adec2;}
+  .pbi-btn.primary{background:rgba(62,201,158,.14);border-color:rgba(62,201,158,.3);color:#8adec2;}
+  .pbi-embed{
+    width:100%;height:calc(100vh - 280px);min-height:400px;border-radius:16px;overflow:hidden;
+    border:1px solid var(--line);background:rgba(255,255,255,.02);position:relative;
+  }
+  .pbi-embed iframe{width:100%;height:100%;border:none;border-radius:16px;}
+  .pbi-placeholder{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:18px;text-align:center;padding:40px;
+  }
+  .pbi-icon{
+    width:72px;height:72px;border-radius:18px;display:grid;place-items:center;
+    background:linear-gradient(135deg,rgba(243,185,73,0.18),rgba(240,97,78,0.10));
+    border:1px solid rgba(243,185,73,0.25);font-size:32px;
+  }
+  .pbi-placeholder h3{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--ink);}
+  .pbi-placeholder p{font-size:13px;color:var(--muted);max-width:480px;line-height:1.7;}
+  .pbi-setup-steps{display:flex;flex-direction:column;gap:8px;text-align:left;width:100%;max-width:480px;}
+  .pbi-step{
+    display:flex;align-items:flex-start;gap:11px;padding:12px 15px;border-radius:12px;
+    background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.065);
+  }
+  .pbi-step-num{
+    width:24px;height:24px;border-radius:50%;background:rgba(243,185,73,.15);color:#f5d49a;
+    font-family:var(--font-mono);font-size:10px;display:grid;place-items:center;flex:0 0 24px;
+  }
+  .pbi-step-text strong{display:block;font-size:12.5px;font-weight:600;margin-bottom:2px;}
+  .pbi-step-text span{font-family:var(--font-mono);font-size:10.5px;color:var(--muted);}
+  .pbi-kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .pbi-kpi{padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);}
+  .pbi-kpi .pk-label{font-family:var(--font-mono);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:6px;}
+  .pbi-kpi .pk-val{font-family:var(--font-display);font-size:19px;font-weight:700;}
+  .pbi-kpi .pk-sub{font-size:10.5px;color:var(--muted);margin-top:3px;}
+
+  /* ════════════════════ MINI STAT ════════════════════ */
+  .mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .mini-stat{padding:11px;border-radius:13px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);}
+  .mini-stat .ms-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+  .mini-stat .ms-val{font-family:var(--font-display);font-size:17px;font-weight:700;margin-top:3px;}
+  </style>
+  </head>
+  <body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">FS</div>
+      <div class="brand-copy">
+        <strong>Smart FinGuard</strong>
+        <span>End-to-End Fraud Intelligence</span>
+      </div>
+    </div>
+    <nav class="topnav">
+      <button onclick="showPage('detection',this)">Detection</button>
+      <button onclick="showPage('dashboard',this)">Dashboard</button>
+      <button onclick="showPage('alerts',this)">Alerts</button>
+    </nav>
+    <div class="status-chip"><span class="pulse"></span>LIVE</div>
+  </header>
+
+  <div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="side-block">
+      <div class="side-label">Navigation</div>
+      <div class="nav-item active" onclick="showPage('detection',null,this)">
+        <div class="nav-num">01</div>
+        <div class="nav-text"><strong>Detection</strong><span>Score transactions</span></div>
+      </div>
+
+      <div class="nav-item" onclick="showPage('dashboard',null,this)">
+        <div class="nav-num">02</div>
+        <div class="nav-text"><strong>BI Dashboard</strong><span>Power BI embed</span></div>
+      </div>
+
+      <div class="nav-item" onclick="showPage('alerts',null,this)">
+        <div class="nav-num">04</div>
+        <div class="nav-text"><strong>Fraud Alerts</strong><span>Live feed</span></div>
+      </div>
+
+    </div>
+
+    <div class="side-block">
+      <div class="side-label">Platform Pulse</div>
+      <div class="pulse-cards">
+        <div class="pulse-card"><div class="pc-label">Active Section</div><div class="pc-val" id="ps-section">Detection</div></div>
+        <div class="pulse-card"><div class="pc-label">Current Decision</div><div class="pc-val" id="ps-decision">Awaiting</div></div>
+        <div class="pulse-card"><div class="pc-label">Queue Status</div><div class="pc-val" id="ps-queue">Normal</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+  <!-- ══════════════ PAGE: DETECTION ══════════════ -->
+  <div id="page-detection" class="page active">
+
+    <div class="hero-row">
+      <div class="card hero-left">
+        <div class="eyebrow">Transaction Risk Intelligence</div>
+        <h1>Fraud Detection<br>Command Center</h1>
+        <p>Analyze suspicious payment behavior, score transaction risk in real time using AI-powered signals and behavioral anomaly detection.</p>
+        <div class="hero-badges">
+          <div class="hbadge"><div class="hb-label">Detection Mode</div><div class="hb-val">Real-Time AI</div></div>
+          <div class="hbadge"><div class="hb-label">Coverage</div><div class="hb-val">Payments + Transfers</div></div>
+          <div class="hbadge"><div class="hb-label">Priority Metric</div><div class="hb-val">High Recall</div></div>
+        </div>
+      </div>
+      <div class="card hero-right" style="padding:22px;justify-content:flex-start;gap:14px;">
+        <div>
+          <div style="font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:3px;">Live Risk Signals</div>
+          <div style="font-family:var(--font-display);font-size:17px;font-weight:700;letter-spacing:-.02em;margin-bottom:3px;">Transaction Indicators</div>
+          <div style="font-size:11.5px;color:var(--muted);line-height:1.55;">Core fraud signals update in real time as you fill the form.</div>
+        </div>
+        <div class="sgrid" id="hero-signals" style="flex:1;">
+          <div class="sc" id="hs-time"><span class="sc-l">Time of Day</span><strong style="font-size:18px;display:block;margin-bottom:5px;">—</strong><div class="spill neutral">Neutral</div></div>
+          <div class="sc" id="hs-vel"><span class="sc-l">Velocity</span><strong style="font-size:18px;display:block;margin-bottom:5px;">—</strong><div class="spill neutral">Neutral</div></div>
+          <div class="sc" id="hs-geo"><span class="sc-l">Geo Anomaly</span><strong style="font-size:18px;display:block;margin-bottom:5px;">—</strong><div class="spill neutral">Neutral</div></div>
+          <div class="sc" id="hs-dev"><span class="sc-l">Spending Dev.</span><strong style="font-size:18px;display:block;margin-bottom:5px;">—</strong><div class="spill neutral">Neutral</div></div>
+        </div>
+        <div class="mini-stats">
+          <div class="mini-stat"><div class="ms-label">Flagged Today</div><div class="ms-val">2,841</div></div>
+          <div class="mini-stat"><div class="ms-label">Avg Latency</div><div class="ms-val">38ms</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-strip">
+      <div class="kpi"><div class="k-label">Scoring Status</div><div class="k-val" id="k-status">Standby</div></div>
+      <div class="kpi"><div class="k-label">Risk Decision</div><div class="k-val" id="k-decision">—</div></div>
+      <div class="kpi"><div class="k-label">Channel</div><div class="k-val" id="k-channel">—</div></div>
+      <div class="kpi"><div class="k-label">Location</div><div class="k-val" id="k-location">—</div></div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h2>Score a Transaction</h2>
+        <p class="sub">Enter transaction context, device behavior, and anomaly indicators to get an AI-powered fraud assessment.</p>
+        <div class="quick-picks">
+          <div class="qp" onclick="fill('low')"><strong>Low-Risk Retail</strong><p>Daytime card, low velocity, stable geography.</p></div>
+          <div class="qp" onclick="fill('medium')"><strong>Watchlist Scenario</strong><p>Moderate anomaly, elevated deviation, unusual merchant.</p></div>
+          <div class="qp" onclick="fill('high')"><strong>Fraud Stress Test</strong><p>Late-night transfer, high velocity, strong geo anomaly.</p></div>
+        </div>
+        <form onsubmit="assess(event)">
+          <div class="fgrid">
+            <div class="field"><label>Amount (₹)</label><input id="f-amount" type="number" step="0.01" placeholder="84200" required/></div>
+            <div class="field"><label>Sender Account</label><input id="f-sender" type="text" placeholder="ACC100245" required/></div>
+            <div class="field"><label>Receiver Account</label><input id="f-receiver" type="text" placeholder="ACC998731" required/></div>
+            <div class="field"><label>Transaction Type</label>
+              <select id="f-type"><option value="transfer">Transfer</option><option value="payment">Payment</option><option value="withdrawal">Withdrawal</option><option value="deposit">Deposit</option></select>
+            </div>
+            <div class="field"><label>Merchant Category</label>
+              <select id="f-merchant"><option value="peer_to_peer">Peer to Peer</option><option value="online">Online</option><option value="utilities">Utilities</option><option value="retail">Retail</option><option value="travel">Travel</option></select>
+            </div>
+            <div class="field"><label>Location</label><input id="f-location" type="text" placeholder="Mumbai" required/></div>
+            <div class="field"><label>Device Used</label>
+              <select id="f-device"><option value="mobile">Mobile</option><option value="web">Web</option><option value="atm">ATM</option><option value="pos">POS</option></select>
+            </div>
+            <div class="field"><label>Payment Channel</label>
+              <select id="f-channel"><option value="upi">UPI</option><option value="card">Card</option><option value="wallet">Wallet</option><option value="ach">ACH</option><option value="net_banking">Net Banking</option></select>
+            </div>
+            <div class="field"><label>Transaction Hour (0–23)</label><input id="f-hour" type="number" min="0" max="23" placeholder="2" required/></div>
+            <div class="field"><label>Day of Week (0=Mon)</label><input id="f-dow" type="number" min="0" max="6" placeholder="5" required/></div>
+            <div class="field"><label>Mins Since Last Txn</label><input id="f-time" type="number" step="0.01" placeholder="3"/></div>
+            <div class="field"><label>Spending Deviation</label><input id="f-dev" type="number" step="0.01" placeholder="3.8"/></div>
+            <div class="field"><label>Velocity Score</label><input id="f-vel" type="number" placeholder="18"/></div>
+            <div class="field"><label>Geo Anomaly (0–1)</label><input id="f-geo" type="number" step="0.01" min="0" max="1" placeholder="0.91"/></div>
+          </div>
+          <button class="submit-btn" type="submit" id="submitBtn">Run Fraud Assessment</button>
+          <p class="tip">Higher velocity, geo anomaly, late-night activity and large deviation increase risk.</p>
+        </form>
+      </div>
+
+      <div class="stack">
+        <div class="card loader-wrap">
+          <div class="loader-ovl" id="loader"><div class="spin"></div><p>Analyzing with AI…</p></div>
+          <h2>Risk Decision</h2>
+          <p class="sub">AI-powered fraud score and classification outcome.</p>
+          <div class="risk-badge neutral" id="r-badge">Awaiting Assessment</div>
+          <div class="score-ring" id="r-ring"
+            style="background:radial-gradient(circle at center,rgba(5,12,26,1) 58%,transparent 59%),conic-gradient(#3ec99e 0deg,#3ec99e 0deg,rgba(255,255,255,.07) 0deg);">
+            <div><strong id="r-score">0%</strong><span>Fraud Score</span></div>
+          </div>
+          <div class="rgrid">
+            <div class="rc"><span class="rc-l">Flagged as Fraud</span><strong id="r-flagged">—</strong></div>
+            <div class="rc"><span class="rc-l">Model</span><strong id="r-model">—</strong></div>
+            <div class="rc"><span class="rc-l">Confidence</span><strong id="r-conf">—</strong></div>
+            <div class="rc"><span class="rc-l">Review Queue</span><strong id="r-queue">Standard</strong></div>
+          </div>
+          <div class="callout" id="r-callout" style="margin-top:13px;">Submit a transaction to generate a live fraud probability and decision summary.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card">
+
+    <h2 style="font-size:17px;">
+      Transaction Intelligence Guide
+    </h2>
+
+    <p class="sub">
+      Explanation of fraud detection indicators, behavioral patterns,
+      and transaction risk signals used by the AI engine.
+    </p>
+
+    <div class="ai-box" id="ai-analysis">
+
+      <h4 style="margin-bottom:14px;">
+        Fraud Detection Parameters
+      </h4>
+
+      <ul style="line-height:1.9; padding-left:18px;">
+
+        <li>
+          <strong>Amount (₹)</strong> →
+          Total transaction value being processed.
+        </li>
+
+        <li>
+          <strong>Sender Account</strong> →
+          Source account initiating the transaction.
+        </li>
+
+        <li>
+          <strong>Receiver Account</strong> →
+          Destination account receiving the funds.
+        </li>
+
+        <li>
+          <strong>Transaction Type</strong> →
+          Transaction category such as payment,
+          withdrawal, or transfer.
+        </li>
+
+        <li>
+          <strong>Merchant Category</strong> →
+          Business domain associated with the transaction.
+        </li>
+
+        <li>
+          <strong>Location</strong> →
+          Geographic origin of transaction activity.
+          Foreign or unknown locations may increase risk.
+        </li>
+
+        <li>
+          <strong>Device Used</strong> →
+          Device or access channel used during transaction.
+        </li>
+
+        <li>
+          <strong>Payment Channel</strong> →
+          Payment medium including UPI,
+          wallet, card, or banking systems.
+        </li>
+
+        <li>
+          <strong>Transaction Hour</strong> →
+          Transaction execution time.
+          Late-night activity may indicate suspicious behavior.
+        </li>
+
+        <li>
+          <strong>Day of Week</strong> →
+          Weekly behavioral activity pattern indicator.
+        </li>
+
+        <li>
+          <strong>Mins Since Last Txn</strong> →
+          Time interval from previous customer transaction.
+          Very small intervals may indicate automated fraud.
+        </li>
+
+        <li>
+          <strong>Spending Deviation</strong> →
+          Difference between current transaction amount
+          and normal customer spending behavior.
+        </li>
+
+        <li>
+          <strong>Velocity Score</strong> →
+          Measures transaction frequency and behavioral speed.
+          Higher scores indicate suspicious rapid activity.
+        </li>
+
+        <li>
+          <strong>Geo Anomaly (0–1)</strong> →
+          Geographic anomaly risk score where
+          values closer to 1 indicate higher fraud risk.
+        </li>
+
+      </ul>
+
+    </div>
+
+  </div>
+
+  </div><!-- end detection -->
+
+
+  <!-- ══════════════ PAGE: BI DASHBOARD ══════════════ -->
+  <!-- <div id="page-dashboard" class="page">
+    <div class="pbi-wrapper">
+
+      <div class="card pbi-header" style="padding:18px 22px;">
+        <div class="pbi-title-block">
+          <h2>Power BI Dashboard</h2>
+          <p>Embedded real-time fraud analytics from your Power BI workspace. Update the embed URL in Settings.</p>
+        </div>
+        <div class="pbi-actions">
+          <button class="pbi-btn primary" id="pbi-fullscreen-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+        </div>
+      </div>
+
+      <div class="pbi-kpi-strip">
+        <div class="pbi-kpi"><div class="pk-label">Total Transactions</div><div class="pk-val">1,84,392</div><div class="pk-sub">↑ 8.2% vs last week</div></div>
+        <div class="pbi-kpi"><div class="pk-label">Fraud Rate</div><div class="pk-val" style="color:#f0614e;">0.17%</div><div class="pk-sub">↓ 0.02% improved</div></div>
+        <div class="pbi-kpi"><div class="pk-label">Blocked Value</div><div class="pk-val" style="color:#f5b84a;">₹1.3Cr</div><div class="pk-sub">↑ 11% vs last week</div></div>
+        <div class="pbi-kpi"><div class="pk-label">Model Accuracy</div><div class="pk-val" style="color:#3ec99e;">98.7%</div><div class="pk-sub">↑ 0.3% this week</div></div>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="pbi-embed" id="pbi-container">
+          <iframe id="pbi-iframe"
+            src="about:blank"
+            allowfullscreen
+            style="display:none;">
+          </iframe>
+          <div class="pbi-placeholder" id="pbi-placeholder">
+            <div class="pbi-icon">📊</div>
+            <h3>Connect Your Power BI Report</h3>
+            <p>Paste your Power BI embed URL below or go to Settings → Dashboard Config to set it permanently. Your report will embed directly in this panel.</p>
+            <div style="display:flex;gap:9px;width:100%;max-width:480px;">
+              <input id="pbi-url-input" type="text" placeholder="https://app.powerbi.com/links/SUY2Mbv_R8?ctid=f8d6f9e3-38ce-46d7-ac92-2b3abc199188&pbi_source=linkShare" style="flex:1;font-size:12px;"/>
+              <button class="pbi-btn primary" onclick="applyPBIUrl()" style="flex-shrink:0;white-space:nowrap;">Embed</button>
+            </div>
+            <div class="pbi-setup-steps">
+              <div class="pbi-step"><div class="pbi-step-num">1</div><div class="pbi-step-text"><strong>Publish to Web</strong><span>In Power BI: File → Publish to web → Create embed code</span></div></div>
+              <div class="pbi-step"><div class="pbi-step-num">2</div><div class="pbi-step-text"><strong>Copy the embed URL</strong><span>Copy the URL from the iframe src in the generated HTML</span></div></div>
+              <div class="pbi-step"><div class="pbi-step-num">3</div><div class="pbi-step-text"><strong>Paste above & click Embed</strong><span>The report will load live in this panel with auto-refresh</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>end dashboard -->
+
+  <!-- ══════════════ PAGE: BI DASHBOARD ══════════════ -->
+  <div id="page-dashboard" class="page">
+
+    <div class="pbi-wrapper">
+
+      <!-- HEADER -->
+      <div class="card pbi-header" style="padding:18px 22px;">
+
+        <div class="pbi-title-block">
+          <h2>Fraud Analytics Dashboard</h2>
+
+          <p>
+            Real-time fraud analytics and transaction monitoring
+            dashboard for AI-powered fraud detection.
+          </p>
+        </div>
+
+        <div class="pbi-actions">
+          <button class="pbi-btn primary" id="pbi-fullscreen-btn" onclick="toggleFullscreen()" > ⛶ Fullscreen </button>
+        </div>
+
+      </div>
+
+      <!-- DASHBOARD IMAGE -->
+      <div
+  class="pbi-embed"
+  id="pbi-container"
+  style="
+    width:100%;
+    height:75vh;
+    min-height:650px;
+    background:#07111f;
+    border-radius:16px;
+    overflow:hidden;
+  "
+>
+
+  <img
+    src="/static/dashboard/dashboard.png"
+    alt="Fraud Dashboard"
+
+    style="
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      border-radius:16px;
+    "
+  >
+
+</div>
+
+    </div>
+
+  </div>
+
+  
+
+ 
+
+  <div id="page-alerts" class="page">
+    <div class="kpi-strip">
+      <div class="kpi">
+        <div class="k-label">Active Alerts</div>
+        <div class="k-val" id="alert-active" style="color:#f0614e;"> 0 </div>
+        <div class="k-sub"> Live monitored transactions </div>
+      </div>
+
+      <div class="kpi">
+        <div class="k-label">Critical</div>
+        <div class="k-val" id="alert-critical" style="color:#f0614e;"> 0 </div>
+        <div class="k-sub"> Requires immediate action </div>
+      </div>
+
+      <div class="kpi">
+        <div class="k-label">Warning</div>
+        <div class="k-val" id="alert-warning" style="color:#f5b84a;"> 0 </div>
+        <div class="k-sub"> Under investigation </div>
+      </div>
+
+      <div class="kpi">
+        <div class="k-label">Cleared Today</div>
+        <div class="k-val" id="alert-safe" style="color:#3ec99e;"> 0 </div>
+        <div class="k-sub"> Safe transactions </div>
+      </div>
+
+    </div>
+
+    <div class="card" style="grid-column:1/-1;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+        <div>
+          <h2>Live Fraud Alert Feed</h2>
+          <p class="sub" style="margin-bottom:0;">
+            Real-time fraud operations alerts,
+            severity-filtered for analyst review.
+          </p>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:10px; color:var(--muted);">
+          <span class="pulse" style="width:5px;height:5px;"></span>
+          Auto-refreshing
+        </div>
+
+      </div>
+
+      <div class="filter-row" style="margin:12px 0;">
+        <button class="filter-btn active" onclick="filterAlerts('all',this)"> All Alerts </button>
+        <button class="filter-btn" onclick="filterAlerts('critical',this)"> 🔴 Critical </button>
+        <button class="filter-btn" onclick="filterAlerts('warning',this)"> 🟡 Warning </button>
+        <button class="filter-btn" onclick="filterAlerts('cleared',this)"> 🟢 Cleared </button>
+      </div>
+
+      <!-- DYNAMIC ALERTS -->
+
+      <div id="alerts-page-list" style=" display:flex; flex-direction:column; gap:11px;">
+        <div class="empty-alert">
+           No fraud alerts yet.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </main>
+  </div><!-- end shell -->
+
+  <script>
+
+  /* ══════════ PAGE NAVIGATION ══════════ */
+  // const pages = ['detection','dashboard','analytics','alerts','reports','settings'];
+  // const pageTitles = {
+  //   detection:'Detection',
+  //   dashboard:'BI Dashboard',
+  //   analytics:'Analytics',
+  //   alerts:'Fraud Alerts',
+  //   reports:'Reports',
+  //   settings:'Settings'
+  // };
+
+  const pages = ['detection', 'dashboard', 'alerts'];
+
+  const pageTitles = {
+  detection: 'Detection',
+  dashboard: 'BI Dashboard',
+  alerts: 'Fraud Alerts'
+};
+  
+
+  function showPage(id, topBtn, sideItem) {
+    pages.forEach(p => document.getElementById('page-'+p).classList.remove('active'));
+    document.getElementById('page-'+id).classList.add('active');
+
+    document.querySelectorAll('.topnav button').forEach(b => b.classList.remove('active'));
+    if (topBtn) topBtn.classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if (sideItem) sideItem.classList.add('active');
+
+    document.getElementById('ps-section').textContent = pageTitles[id];
+  }
+
+  document.querySelectorAll('.nav-item').forEach((item, i) => {
+    item.addEventListener('click', () => showPage(pages[i], null, item));
+  });
+
+  document.querySelectorAll('.topnav button').forEach((btn, i) => {
+    btn.addEventListener('click', () => showPage(pages[i], btn, null));
+  });
+
+  function updateDynamicIndicators(data, fraudScore){
+
+      // ==============================
+      // TIME OF DAY
+      // ==============================
+
+      let timeText = "Normal";
+      let timeClass = "safe";
+
+      if(data.transaction_hour >= 0 && data.transaction_hour <= 5){
+          timeText = "Late Night";
+          timeClass = "critical";
+      }
+      else if(data.transaction_hour >= 22){
+          timeText = "Night";
+          timeClass = "warning";
+      }
+
+      document.querySelector("#hs-time strong").innerText = timeText;
+      document.querySelector("#hs-time .spill").innerText = timeClass.toUpperCase();
+      document.querySelector("#hs-time .spill").className = `spill ${timeClass}`;
+
+
+      // ==============================
+      // VELOCITY
+      // ==============================
+
+      let velocityText = "Low";
+      let velocityClass = "safe";
+
+      if(data.velocity_score >= 15){
+          velocityText = "High";
+          velocityClass = "critical";
+      }
+      else if(data.velocity_score >= 8){
+          velocityText = "Medium";
+          velocityClass = "warning";
+      }
+
+      document.querySelector("#hs-vel strong").innerText = velocityText;
+      document.querySelector("#hs-vel .spill").innerText = velocityClass.toUpperCase();
+      document.querySelector("#hs-vel .spill").className = `spill ${velocityClass}`;
+
+
+      // ==============================
+      // GEO ANOMALY
+      // ==============================
+
+      let geoText = "Stable";
+      let geoClass = "safe";
+
+      if(data.geo_anomaly_score >= 0.8){
+          geoText = "High Risk";
+          geoClass = "critical";
+      }
+      else if(data.geo_anomaly_score >= 0.4){
+          geoText = "Moderate";
+          geoClass = "warning";
+      }
+
+      document.querySelector("#hs-geo strong").innerText = geoText;
+      document.querySelector("#hs-geo .spill").innerText = geoClass.toUpperCase();
+      document.querySelector("#hs-geo .spill").className = `spill ${geoClass}`;
+
+
+      // ==============================
+      // SPENDING DEVIATION
+      // ==============================
+
+      let devText = "Normal";
+      let devClass = "safe";
+
+      if(data.spending_deviation_score >= 5){
+          devText = "Extreme";
+          devClass = "critical";
+      }
+      else if(data.spending_deviation_score >= 2){
+          devText = "Elevated";
+          devClass = "warning";
+      }
+
+      document.querySelector("#hs-dev strong").innerText = devText;
+      document.querySelector("#hs-dev .spill").innerText = devClass.toUpperCase();
+      document.querySelector("#hs-dev .spill").className = `spill ${devClass}`;
+
+
+      // ==============================
+      // KPI STRIP
+      // ==============================
+
+      document.getElementById("k-status").innerText = "Analyzed";
+
+      document.getElementById("k-channel").innerText =
+          data.payment_channel.toUpperCase();
+
+      document.getElementById("k-location").innerText =
+          data.location;
+
+      if(fraudScore >= 80){
+          document.getElementById("k-decision").innerText = "HIGH RISK";
+          document.getElementById("ps-decision").innerText = "HIGH RISK";
+      }
+      else if(fraudScore >= 50){
+          document.getElementById("k-decision").innerText = "REVIEW";
+          document.getElementById("ps-decision").innerText = "REVIEW";
+      }
+      else{
+          document.getElementById("k-decision").innerText = "SAFE";
+          document.getElementById("ps-decision").innerText = "SAFE";
+      }
+  }
+
+  let transactionHistory = [];
+
+  /* ════════════════════════════════════════
+    FRAUD ASSESSMENT
+  ════════════════════════════════════════ */
+  async function assess(event){
+
+      event.preventDefault();
+
+      // ====================================
+      // BUTTON LOADING
+      // ====================================
+
+      const btn = document.getElementById("submitBtn");
+
+      btn.disabled = true;
+      btn.innerText = "Processing...";
+
+      // ====================================
+      // FORM DATA
+      // ====================================
+
+      const data = {
+
+          amount:
+              parseFloat(document.getElementById("f-amount").value) || 0,
+
+          sender_account:
+              document.getElementById("f-sender").value,
+
+          receiver_account:
+              document.getElementById("f-receiver").value,
+
+          transaction_type:
+              document.getElementById("f-type").value,
+
+          merchant_category:
+              document.getElementById("f-merchant").value,
+
+          location:
+              document.getElementById("f-location").value,
+
+          device_used:
+              document.getElementById("f-device").value,
+
+          payment_channel:
+              document.getElementById("f-channel").value,
+
+          transaction_hour:
+              parseInt(document.getElementById("f-hour").value) || 0,
+
+          transaction_dayofweek:
+              parseInt(document.getElementById("f-dow").value) || 0,
+
+          seconds_since_last_txn:
+              parseFloat(document.getElementById("f-time").value) || 0,
+
+          spending_deviation_score:
+              parseFloat(document.getElementById("f-dev").value) || 0,
+
+          velocity_score:
+              parseInt(document.getElementById("f-vel").value) || 0,
+
+          geo_anomaly_score:
+              parseFloat(document.getElementById("f-geo").value) || 0,
+
+          // REQUIRED BACKEND FIELDS
+
+          is_night_transaction: 0,
+          customer_avg_amount: 0,
+          amount_deviation: 0,
+          merchant_frequency: 1,
+          time_since_last_transaction: 0,
+          high_velocity_flag: 0,
+          high_geo_anomaly_flag: 0
+      };
+
+      try {
+
+          // ====================================
+          // API CALL
+          // ====================================
+
+          const res = await fetch(
+              "http://127.0.0.1:8000/predict",
+              {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify(data)
+              }
+          );
+
+          console.log("STATUS:", res.status);
+
+          if(!res.ok){
+
+              const errorText = await res.text();
+
+              console.error("BACKEND ERROR:", errorText);
+
+              throw new Error(errorText);
+          }
+
+          // ====================================
+          // RESPONSE
+          // ====================================
+
+          const r = await res.json();
+
+          console.log("Backend Response:", r);
+          console.log("Fraud Probability:", r.fraud_probability);
+
+          // ====================================
+          // SAFE TEXT UPDATE FUNCTION
+          // ====================================
+
+          const setText = (id, value) => {
+
+              const el = document.getElementById(id);
+
+              if(el){
+                  el.innerText = value;
+              }
+          };
+
+          // ====================================
+          // MAIN SCORE
+          // ====================================
+
+          const fraudScore = parseFloat(r.fraud_probability) || 0;
+
+          // ====================================
+          // DYNAMIC INDICATORS
+          // ====================================
+
+          updateDynamicIndicators(data, fraudScore);
+
+          // ====================================
+          // KPI STATUS
+          // ====================================
+
+          setText("k-status", "LIVE");
+
+          setText(
+              "ps-decision",
+              r.is_fraud ? "HIGH RISK" : "SAFE"
+          );
+
+          setText(
+              "r-queue",
+              r.is_fraud ? "Priority" : "Standard"
+          );
+
+          // ====================================
+          // RISK SIGNALS
+          // ====================================
+
+          const hour = data.transaction_hour;
+
+          // ====================================
+          // RISK SIGNALS
+          // ====================================
+
+          const hsTime =
+              document.querySelector("#hs-time .spill");
+
+          if(hsTime){
+              hsTime.innerText =
+                  (hour >= 0 && hour <= 5)
+                      ? "CRITICAL"
+                      : "SAFE";
+          }
+
+          const hsVel =
+              document.querySelector("#hs-vel .spill");
+
+          if(hsVel){
+              hsVel.innerText =
+                  data.velocity_score >= 15
+                      ? "CRITICAL"
+                      : data.velocity_score >= 8
+                      ? "WARNING"
+                      : "SAFE";
+          }
+
+          const hsGeo =
+              document.querySelector("#hs-geo .spill");
+
+          if(hsGeo){
+              hsGeo.innerText =
+                  data.geo_anomaly_score >= 0.8
+                      ? "CRITICAL"
+                      : data.geo_anomaly_score >= 0.4
+                      ? "WARNING"
+                      : "SAFE";
+          }
+
+          const hsDev =
+              document.querySelector("#hs-dev .spill");
+
+          if(hsDev){
+              hsDev.innerText =
+                  data.spending_deviation_score >= 5
+                      ? "CRITICAL"
+                      : data.spending_deviation_score >= 2
+                      ? "WARNING"
+                      : "SAFE";
+          }
+          // ====================================
+          // SIGNAL VALUES
+          // ====================================
+
+          setText(
+              "time-of-day",
+              (hour >= 0 && hour <= 5)
+                  ? "Late Night"
+                  : "Day Time"
+          );
+
+          setText(
+              "velocity",
+              data.velocity_score + " txns"
+          );
+
+          setText(
+              "geo",
+              data.geo_anomaly_score.toFixed(2)
+          );
+
+          setText(
+              "spending",
+              data.spending_deviation_score.toFixed(2) + "x"
+          );
+
+          // ====================================
+          // SCORE RING
+          // ====================================
+
+          updateRing(fraudScore);
+
+          // setText(
+          //     "r-score",
+          //     fraudScore.toFixed(2) + "%"
+          // );
+
+
+
+          document.getElementById("r-score").textContent = fraudScore.toFixed(2) + "%";
+
+          document.getElementById("r-conf").textContent = fraudScore.toFixed(2) + "%";
+
+          // document.getElementById("r-conf").innerText = fraudScore.toFixed(2) + "%";
+          // ====================================
+          // FRAUD LABEL
+          // ====================================
+
+          const flaggedEl =
+              document.getElementById("r-flagged");
+
+          flaggedEl.innerText =
+              r.is_fraud
+                  ? "YES — FRAUD"
+                  : "NO — SAFE";
+
+          flaggedEl.style.color =
+              r.is_fraud
+                  ? "#ff6b6b"
+                  : "#4ade80";
+
+          // ====================================
+          // MODEL + CONFIDENCE
+          // ====================================
+
+          setText(
+              "r-model",
+              r.model_version
+          );
+
+          document.getElementById("r-conf").innerText = fraudScore.toFixed(2) + "%";
+
+          setText(
+              "r-callout",
+              "Prediction completed successfully"
+          );
+
+          // ====================================
+          // SAVE TRANSACTION
+          // ====================================
+
+          // const tx = {
+          //     id: "TXN-" + Math.floor(Math.random() * 100000),
+          //     amount: data.amount,
+          //     location: data.location,
+          //     payment_channel: data.payment_channel,
+          //     fraudScore: fraudScore,
+          //     isFraud: r.is_fraud,
+          //     timestamp: new Date().toLocaleTimeString()
+          // };
+
+          const tx = {
+            id: "TXN-" + Math.floor(Math.random() * 99999),
+            amount: data.amount,
+            location: data.location,
+            payment_channel: data.payment_channel,
+            fraudScore: parseFloat(fraudScore),
+            isFraud: r.is_fraud,
+            timestamp: new Date().toLocaleTimeString()
+        };
+
+          // ====================================
+          // UPDATE ALERTS
+          // ====================================
+
+          transactionHistory.unshift(tx);
+
+          updateAlerts();
+
+          updateAlertKPIs();
+
+          updateReports();
+
+      }
+      catch(error){
+
+          console.error(error);
+
+          alert(error.message);
+
+      }
+      finally{
+
+          // ====================================
+          // RESET BUTTON
+          // ====================================
+
+          btn.disabled = false;
+
+          btn.innerText = "Run Fraud Assessment";
+      }
+  }
+
+  /* ══════════ RING UI ══════════ */
+  function updateRing(prob){
+    const normalized = prob / 100;
+
+    const deg = Math.round(normalized * 360);
+
+    const color =
+      prob > 70 ? "#f0614e" :
+      prob > 40 ? "#f5b84a" :
+      "#3ec99e";
+
+    document.getElementById("r-ring").style.background =
+      `radial-gradient(circle at center, rgba(5,12,26,1) 58%, transparent 59%),
+      conic-gradient(${color} 0deg, ${color} ${deg}deg,
+      rgba(255,255,255,.07) ${deg}deg)`;
+  }
+
+  function getAlertLevel(score){
+
+      if(score >= 85){
+          return "CRITICAL";
+      }
+
+      if(score >= 60){
+          return "WARNING";
+      }
+
+      return "CLEARED";
+  }
+
+
+  function updateAlerts(filter = "all") {
+
+    const container =
+        document.getElementById("alerts-page-list");
+
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (transactionHistory.length === 0) {
+
+        container.innerHTML = `
+            <div class="alert-row safe">
+                <div class="ar-title">SYSTEM</div>
+                <p>No fraud alerts yet.</p>
+                <div class="ar-time">
+                    Waiting for transactions...
+                </div>
+            </div>
+        `;
+
+        return;
+    }
+
+    let filtered = transactionHistory;
+
+    // =========================
+    // FILTERS
+    // =========================
+
+    if (filter === "critical") {
+
+        filtered = transactionHistory.filter(
+            tx => tx.fraudScore >= 80
+        );
+    }
+
+    else if (filter === "warning") {
+
+        filtered = transactionHistory.filter(
+            tx => tx.fraudScore >= 50 &&
+                  tx.fraudScore < 80
+        );
+    }
+
+    else if (filter === "cleared") {
+
+        filtered = transactionHistory.filter(
+            tx => tx.fraudScore < 50
+        );
+    }
+
+    // =========================
+    // EMPTY FILTER RESULT
+    // =========================
+
+    if (filtered.length === 0) {
+
+        container.innerHTML = `
+            <div class="alert-row safe">
+                <div class="ar-title">NO DATA</div>
+                <p>No alerts found for this filter.</p>
+            </div>
+        `;
+
+        return;
+    }
+
+    // =========================
+    // RENDER ALERTS
+    // =========================
+
+    filtered.forEach(tx => {
+
+        let severity = "safe";
+        let label = "CLEARED";
+
+        if (tx.fraudScore >= 80) {
+
+            severity = "critical";
+            label = "CRITICAL";
+        }
+
+        else if (tx.fraudScore >= 50) {
+
+            severity = "warning";
+            label = "WARNING";
+        }
+
+        container.innerHTML += `
+
+            <div class="alert-full ${severity}">
+
+                <div>
+
+                    <div class="ar-title">
+                        ${tx.id}
+                    </div>
+
+                    <p>
+                        ₹${tx.amount}
+                        • ${tx.location}
+                        • ${tx.payment_channel.toUpperCase()}
+                    </p>
+
+                    <div class="ar-time">
+                        ${tx.timestamp}
+                    </div>
+
+                </div>
+
+                <div class="sev-tag ${severity}">
+                    ${label}
+                </div>
+
+            </div>
+        `;
+    });
+}
+
+
+  /* ═══════════════════════════════
+     POWER BI EMBED
+    ═══════════════════════════════ */
+
+function applyPBIUrl(){
+
+    const url =
+        document.getElementById("pbi-url-input")
+        .value
+        .trim();
+
+    if(url === ""){
+
+        alert("https://app.powerbi.com/links/SUY2Mbv_R8?ctid=f8d6f9e3-38ce-46d7-ac92-2b3abc199188&pbi_source=linkShare");
+
+        return;
+    }
+
+    const iframe =
+        document.getElementById("pbi-iframe");
+
+    const placeholder =
+        document.getElementById("pbi-placeholder");
+
+    // LOAD URL
+    iframe.src = url;
+
+    // SHOW IFRAME
+    iframe.style.display = "block";
+
+    // HIDE PLACEHOLDER
+    placeholder.style.display = "none";
+}
+
+/* ═══════════════════════════════
+   FULLSCREEN
+═══════════════════════════════ */
+
+function toggleFullscreen(){
+
+    const elem =
+        document.getElementById("pbi-container");
+
+    if(!document.fullscreenElement){
+
+        elem.requestFullscreen();
+
+    } else {
+
+        document.exitFullscreen();
+    }
+}
+  function updateAlertKPIs(){
+
+    console.log(transactionHistory);
+
+    const critical =
+        transactionHistory.filter(
+            tx => Number(tx.fraudScore) >= 80
+        ).length;
+
+    const warning =
+        transactionHistory.filter(
+            tx =>
+                Number(tx.fraudScore) >= 50 &&
+                Number(tx.fraudScore) < 80
+        ).length;
+
+    const safe =
+        transactionHistory.filter(
+            tx => Number(tx.fraudScore) < 50
+        ).length;
+
+    const active = critical + warning;
+
+    document.getElementById(
+        "alert-active"
+    ).textContent = active;
+
+    document.getElementById(
+        "alert-critical"
+    ).textContent = critical;
+
+    document.getElementById(
+        "alert-warning"
+    ).textContent = warning;
+
+    document.getElementById(
+        "alert-safe"
+    ).textContent = safe;
+}
+
+  // function updateAlertStats(){
+
+  //     const critical =
+  //         transactionHistory.filter(t => t.fraudScore >= 85).length;
+
+  //     const warning =
+  //         transactionHistory.filter(t =>
+  //             t.fraudScore >= 60 && t.fraudScore < 85
+  //         ).length;
+
+  //     const cleared =
+  //         transactionHistory.filter(t => t.fraudScore < 60).length;
+
+  //     document.getElementById("critical-count").innerText = critical;
+
+  //     document.getElementById("warning-count").innerText = warning;
+
+  //     document.getElementById("cleared-count").innerText = cleared;
+
+  //     document.getElementById("active-alerts").innerText =
+  //         critical + warning;
+  // }
+
+  function updateReports(){
+    const table =
+          document.getElementById("report-table");
+
+      if(!table){
+          return;
+      }
+
+      table.innerHTML = "";
+
+      transactionHistory.forEach(tx => {
+
+          table.innerHTML += `
+              <tr>
+                  <td>${tx.id}</td>
+                  <td>₹${tx.amount}</td>
+                  <td>${tx.location}</td>
+                  <td>
+                      ${
+                          tx.isFraud
+                          ? '<span class="badge critical">FRAUD</span>'
+                          : '<span class="badge safe">SAFE</span>'
+                      }
+                  </td>
+              </tr>
+          `;
+      });
+  }
+
+
+  function updateReportStats(){
+
+      const total = transactionHistory.length;
+
+      const fraud =
+          transactionHistory.filter(t => t.fraudScore >= 85).length;
+
+      const fraudRate =
+          total > 0
+          ? ((fraud / total) * 100).toFixed(2)
+          : 0;
+
+      document.getElementById("total-transactions").innerText = total;
+
+      document.getElementById("fraud-rate").innerText =
+          fraudRate + "%";
+  }
+
+
+  /* ══════════ SCENARIO AUTO FILL ══════════ */
+  const scenarios = {
+    low:{amount:'2400',sender:'ACC100245',receiver:'ACC205810',type:'payment',merchant:'retail',location:'Pune',device:'pos',channel:'card',hour:'14',dow:'2',time:'1440',dev:'0.3',vel:'2',geo:'0.05'},
+    medium:{amount:'18500',sender:'ACC773310',receiver:'ACC998200',type:'transfer',merchant:'online',location:'Delhi',device:'mobile',channel:'upi',hour:'20',dow:'4',time:'45',dev:'2.1',vel:'9',geo:'0.55'},
+    high:{amount:'84200',sender:'ACC881100',receiver:'ACC003311',type:'transfer',merchant:'peer_to_peer',location:'Dubai',device:'web',channel:'net_banking',hour:'2',dow:'6',time:'3',dev:'4.8',vel:'22',geo:'0.95'}
+  };
+
+  function fill(key){
+    const s = scenarios[key];
+    document.getElementById('f-amount').value=s.amount;
+    document.getElementById('f-sender').value=s.sender;
+    document.getElementById('f-receiver').value=s.receiver;
+    document.getElementById('f-type').value=s.type;
+    document.getElementById('f-merchant').value=s.merchant;
+    document.getElementById('f-location').value=s.location;
+    document.getElementById('f-device').value=s.device;
+    document.getElementById('f-channel').value=s.channel;
+    document.getElementById('f-hour').value=s.hour;
+    document.getElementById('f-dow').value=s.dow;
+    document.getElementById('f-time').value=s.time;
+    document.getElementById('f-dev').value=s.dev;
+    document.getElementById('f-vel').value=s.vel;
+    document.getElementById('f-geo').value=s.geo;
+  }
+
+  </script>
+  </body>
+  </html>

@@ -1,0 +1,6 @@
+aws:
+  region: ap-southeast-2
+  s3_bucket: fraud-detection-data-lake11
+  raw_prefix: raw/transactions
+  processed_prefix: processed/transactions
+  model_prefix: models/fraud

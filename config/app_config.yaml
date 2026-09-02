@@ -1,0 +1,13 @@
+project:
+  name: Fraud Detection Platform
+  owner: data-platform-team
+  environment: dev
+
+pipeline:
+  target_column: is_fraud
+  train_split: 0.8
+  random_state: 42
+
+inference:
+  threshold: 0.5
+
